@@ -24,6 +24,13 @@ module option =
     | Some f, Some x -> Some(f x)
     | _ -> None
 
+  let (<*>) = applyOption
+  let (<!>) = mapOption
+  let lift2 f opt1 opt2 =
+    f <!> opt1 <*> opt2
+
+  let lift3 f opt1 opt2 opt3 =
+    f <!> opt1 <*> opt2 <*> opt3
 
 module Tests =
   open option
@@ -63,5 +70,14 @@ module Tests =
     let (<*>) = applyOption
     let result = (returnOption add) <*> (Some 2) <*> (Some 1)
                   |> getOrElse 0
+
+    Assert.Equal(result, 3)
+
+  [<Fact>]
+  let ``lift 2 test`` () =
+    let add x y = x + y
+
+    let result = lift2 add (Some 1) (Some 2)
+                |> getOrElse 0
 
     Assert.Equal(result, 3)
