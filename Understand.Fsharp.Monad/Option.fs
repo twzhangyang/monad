@@ -32,6 +32,11 @@ module option =
   let lift3 f opt1 opt2 opt3 =
     f <!> opt1 <*> opt2 <*> opt3
 
+  let bind f opt =
+    match opt with
+    | Some x -> f x
+    | None -> None
+
 module Tests =
   open option
 
@@ -81,3 +86,16 @@ module Tests =
                 |> getOrElse 0
 
     Assert.Equal(result, 3)
+
+  [<Fact>]
+  let ``bind test`` () =
+    let parseInt str =
+      match str with
+      | "-1" -> Some(-1)
+      | "0" -> Some(0)
+      | _ -> None
+
+    let result = bind parseInt (Some "-1")
+                |> getOrElse 0
+
+    Assert.Equal(result, -1)
