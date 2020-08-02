@@ -76,6 +76,33 @@ module result =
   type ResultBuilder() =
     member this.Return x = returnResult x
     member this.Bind(x, f) = bind f x
+    member this.Zero() = Failure []
+    member this.ReturnFrom(m: Result<'T>) = m
+    member this.Delay(f: unit -> _) = f
+    member this.Combine (x,f) = bind f x
+
+    member this.TryFinally(m, compensation) =
+      try
+        this.ReturnFrom(m)
+      finally
+        compensation ()
+
+    member this.Using(res: #System.IDisposable, body) =
+      this.TryFinally
+        (body res,
+         (fun () ->
+           match res with
+           | null -> ()
+           | disp -> disp.Dispose()))
+
+    member this.While(guard, f) =
+      if not (guard ())
+      then this.Zero()
+      else this.Bind(f (), (fun _ -> this.While(guard, f)))
+
+    member this.For(sequence: seq<_>, body) =
+      this.Using
+        (sequence.GetEnumerator(), (fun enum -> this.While(enum.MoveNext, this.Delay(fun () -> body enum.Current))))
 
   let ResultBuilder = new ResultBuilder()
 
@@ -141,10 +168,10 @@ module Tests =
   let ``test sequence`` () =
     let list = [ "1"; "2"; "3" ]
 
-    let parseInt (x:string) =
+    let parseInt (x: string) =
       match Int32.TryParse "5" with
-      | true, i ->  Success i
-      | false, _ -> Failure ["wrong"]
+      | true, i -> Success i
+      | false, _ -> Failure [ "wrong" ]
 
     list
     |> List.map parseInt
