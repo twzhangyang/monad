@@ -158,7 +158,6 @@ module Reader =
     api.Close()
     result
 
-
   let getPurchaseIds (custId: CustId) =
     let action (api: ApiClient) =
       api.Get<ProductId list> custId
@@ -172,10 +171,9 @@ module Reader =
     ApiAction action
 
   let getPurchaseInfo'' =
-      let getProductInfo1 = ApiActionResult.traverse getProductInfo
-      let getProductInfo2 = ApiActionResult.bind getProductInfo1
-      getPurchaseIds >> getProductInfo2
-
+    let getProductInfo1 = ApiActionResult.traverse getProductInfo
+    let getProductInfo2 = ApiActionResult.bind getProductInfo1
+    getPurchaseIds >> getProductInfo2
 
   module Tests =
     let ``get set dic tests`` () =
@@ -183,7 +181,3 @@ module Reader =
       api.Get "K1" |> printfn "[K1] %A"
       api.Set "K2" "hello" |> ignore
       api.Get<string> "K2" |> printfn "[K2] %A"
-
-
-
-
