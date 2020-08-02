@@ -37,6 +37,27 @@ module option =
     | Some x -> f x
     | None -> None
 
+  let traverseOptionA f list =
+    let (<*>) = applyOption
+    let retn = Some
+
+    let initState = retn []
+    let cons head tail = head :: tail
+    let fold head tail = retn cons <*> f head <*> tail
+
+    List.foldBack fold list initState
+
+  let traverseOptionM f list =
+    let (>>=) x f = bind f x
+    let retn = Some
+    let initState = retn []
+    let cons head tail = head :: tail
+    let fold head tail = f head >>= (fun h ->
+      tail >>= (fun t ->
+       retn (cons h t) ) )
+
+    List.foldBack fold list initState
+
 module Tests =
   open option
 

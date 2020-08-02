@@ -1,5 +1,7 @@
 namespace Understand.Fsharp.Monad.XResult
 
+open System
+
 module result =
   type Result<'a> =
     | Success of 'a
@@ -27,6 +29,47 @@ module result =
     match xResult with
     | Success x -> f x
     | Failure err -> Failure err
+
+  let rec traverseResultA f list =
+    let (<*>) = apply
+    let retn = Success
+    let cons head tail = head :: tail
+    match list with
+    | [] -> retn []
+    | head :: tail ->
+        retn cons <*> (f head) <*> (traverseResultA f tail)
+
+//  let rec traverseResultM f list =
+//    let (>>=) x f = bind x f
+//    let retn = Success
+//    let cons head tail = head :: tail
+//    match list with
+//    | [] -> retn []
+//    | head::tail ->
+//        (f head) >>= (fun h ->
+//        traverseResultM f tail >>= (fun t ->
+//        retn (cons h t) ))
+
+  let traverseResultA' f list =
+    let (<*>) = apply
+    let retn = Success
+    let cons head tail = head :: tail
+    let initState = retn []
+    let fold head tail = retn cons <*> (f head) <*> tail
+
+    List.foldBack fold list initState
+
+  let traverseResultM' f list =
+    let (>>=) x f = bind f x
+    let retn = Success
+    let cons head tail = head :: tail
+    let initState = retn []
+    let fold head tail =
+      f head >>= (fun h ->
+        tail >>= (fun t ->
+          retn (cons h t)))
+
+    List.foldBack fold list initState
 
   type ResultBuilder() =
     member this.Return x = returnResult x
@@ -84,3 +127,14 @@ module Tests =
       let customer = createCustomer customerId emailAddress
       return customer
     }
+
+  let ``traverse by applicative style`` () =
+    let list = [1; 2; 3]
+    let createCustomerId id =
+      if id > 1 then
+        Success id
+      else
+        Failure ["incorrect id"]
+
+    traverseResultA' createCustomerId list
+
