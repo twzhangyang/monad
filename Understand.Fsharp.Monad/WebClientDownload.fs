@@ -1,6 +1,5 @@
 namespace Understand.Fsharp.Monad.WebClientDownload
 
-open System.Collections.Generic
 open Understand.Fsharp.Monad.XResult
 
 [<Measure>]
@@ -19,29 +18,27 @@ type UriContent = UriContent of System.Uri * string
 type UriContentSize = UriContentSize of System.Uri * int
 
 module Asyncx =
-  let map f xAsync = async {
-    let! x = xAsync
-    return f x
-  }
+  let map f xAsync =
+    async {
+      let! x = xAsync
+      return f x }
 
-  let bind f xAsync = async {
-    let! x = xAsync
-    return! f x
-  }
+  let bind f xAsync =
+    async {
+      let! x = xAsync
+      return! f x }
 
-  let retn x = async {
-    return x
-  }
+  let retn x = async { return x }
 
-  let apply fAsync xAsync = async {
-    let! fChild = Async.StartChild fAsync
-    let! xChild = Async.StartChild xAsync
+  let apply fAsync xAsync =
+    async {
+      let! fChild = Async.StartChild fAsync
+      let! xChild = Async.StartChild xAsync
 
-    let! f = fChild
-    let! x = xChild
+      let! f = fChild
+      let! x = xChild
 
-    return f x
-  }
+      return f x }
 
   let rec traverseAsyncA f list =
     let (<*>) = apply
@@ -54,6 +51,50 @@ module Asyncx =
 
   let sequenceAsyncA x = traverseAsyncA id x
 
+module AsyncResult =
+  let map f =
+    f
+    |> result.map
+    |> Asyncx.map
+
+  let retn x =
+    x
+    |> result.returnResult
+    |> Asyncx.retn
+
+  let apply fAsyncResult xAsyncResult =
+    fAsyncResult
+    |> Asyncx.bind (fun fResult ->
+      xAsyncResult |> Asyncx.map (fun xResult ->
+      result.apply fResult xResult ))
+
+  let bind f xAsyncResult = async {
+    let! xResult = xAsyncResult
+    match xResult with
+    | result.Success x -> return! f x
+    | result.Failure err -> return (result.Failure err)
+    }
+
+  let rec traverseAsyncResultM f list =
+
+    // define the monadic functions
+    let (>>=) x f = bind f x
+
+    // define a "cons" function
+    let cons head tail = head :: tail
+
+    // right fold over the list
+    let initState = retn []
+    let folder head tail =
+        f head >>= (fun h ->
+        tail >>= (fun t ->
+        retn (cons h t) ))
+
+    List.foldBack folder list initState
+
+    /// Transform a "list<AsyncResult>" into a "AsyncResult<list>"
+    /// and collect the results using bind.
+  let sequenceAsyncResultM x = traverseAsyncResultM id x
 
 module download =
   let getUriContent (uri: System.Uri) =
@@ -97,19 +138,33 @@ module download =
     list |> List.maxBy contentSize
 
   let largestPageSizeA urls =
-    let urls = [""; ""]
-    let size = urls
-               |> List.map (fun u -> System.Uri(u))
-               |> List.map getUriContent
-               |> List.map (Asyncx.map (result.bind getContentSize))
-               |> Asyncx.sequenceAsyncA
-               |> Asyncx.map result.sequenceResultA
-               |> Asyncx.map (result.map maxContentSize)
+    let urls = [ ""; "" ]
+
+    let size =
+      urls
+      |> List.map (fun u -> System.Uri(u))
+      |> List.map getUriContent
+      |> List.map (Asyncx.map (result.bind getContentSize))
+      |> Asyncx.sequenceAsyncA
+      |> Asyncx.map result.sequenceResultA
+      |> Asyncx.map (result.map maxContentSize)
     size
 
   let largestPageSizeA' urls =
-    let urls = [""; ""]
-    let size = urls
-              |> Asyncx.traverseAsyncA (fun x -> System.Uri(x) |> getUriContent |> (Asyncx.map (result.bind getContentSize)))
-              |> Asyncx.map (result.sequenceResultA >> result.map maxContentSize)
+    let urls = [ ""; "" ]
+
+    let size =
+      urls
+      |> Asyncx.traverseAsyncA (fun x ->
+           System.Uri(x)
+           |> getUriContent
+           |> (Asyncx.map (result.bind getContentSize)))
+      |> Asyncx.map (result.sequenceResultA >> result.map maxContentSize)
     size
+
+  let largestPageSizeM_AR urls =
+    urls
+    |> List.map (fun s -> System.Uri(s) |> getUriContent)
+    |> List.map (Asyncx.map (result.bind getContentSize))
+    |> AsyncResult.sequenceAsyncResultM
+    |> AsyncResult.map maxContentSize
