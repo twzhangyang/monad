@@ -8,10 +8,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="Tests.fs" />
         <Compile Include="Option.fs" />
         <Compile Include="List.fs" />
         <Compile Include="Result.fs" />
+        <Compile Include="WebClientDownload.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
 

@@ -70,8 +70,8 @@ module result =
     List.foldBack fold list initState
 
 
-  let sequenceResultA x = traverseResultA' id
-  let sequenceResultM x = traverseResultM' id
+  let sequenceResultA x = traverseResultA' id x
+  let sequenceResultM x = traverseResultM' id x
 
   type ResultBuilder() =
     member this.Return x = returnResult x
@@ -140,7 +140,12 @@ module Tests =
 
   let ``test sequence`` () =
     let list = [ "1"; "2"; "3" ]
-    let parseInt = Int32.Parse
+
+    let parseInt (x:string) =
+      match Int32.TryParse "5" with
+      | true, i ->  Success i
+      | false, _ -> Failure ["wrong"]
+
     list
     |> List.map parseInt
     |> sequenceResultA

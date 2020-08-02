@@ -26,7 +26,6 @@ module list =
     | [] -> []
     | head::tail -> (f head) :: (bind f tail)
 
-
 module Tests =
   open list
 
