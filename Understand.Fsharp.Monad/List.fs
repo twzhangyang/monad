@@ -21,6 +21,11 @@ module list =
     | (f::fTail), (x::xTail) ->
       (f x) :: (zipList fTail xTail)
 
+  let rec bind f xList =
+    match xList with
+    | [] -> []
+    | head::tail -> (f head) :: (bind f tail)
+
 
 module Tests =
   open list
@@ -52,3 +57,11 @@ module Tests =
 
     let result = [add10; add20] <*> [1; 2]
     Assert.StrictEqual(result, [11; 22])
+
+
+  [<Fact>]
+  let ``bind test`` () =
+    let list = [[1; 2]; [1; 2]]
+    let result = bind (fun x -> [ for i in x do yield i]) list
+
+    Assert.StrictEqual(result, [[1; 2];[1; 2]])
