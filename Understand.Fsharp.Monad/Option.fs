@@ -14,18 +14,54 @@ module option =
 
   let mapOption f opt =
     match opt with
-    | Some x -> Some (f x)
+    | Some x -> Some(f x)
     | None -> None
 
-module Tests =
+  let returnOption x = Some x
 
+  let applyOption fOpt xOpt =
+    match fOpt, xOpt with
+    | Some f, Some x -> Some(f x)
+    | _ -> None
+
+
+module Tests =
   open option
 
   [<Fact>]
   let ``map test`` () =
     let hello = Some "hello"
-    let result = hello
-                 |> mapOption (fun a -> a + ", world!")
-                 |> getOrElse ""
+
+    let result =
+      hello
+      |> mapOption (fun a -> a + ", world!")
+      |> getOrElse ""
 
     Assert.Equal(result, "hello, world!")
+
+  [<Fact>]
+  let ``add1 map test`` () =
+    let add1 x = x + 1
+    let add1IfSomething = add1 |> mapOption
+
+    let three =
+      Some 2
+      |> add1IfSomething
+      |> getOrElse 0
+
+    Assert.Equal(three, 3)
+
+  [<Fact>]
+  let ``return test`` () =
+    let two = returnOption 2 |> getOrElse 0
+
+    Assert.Equal(two, 2)
+
+  [<Fact>]
+  let ``apply test`` () =
+    let add x y = x + y
+    let (<*>) = applyOption
+    let result = (returnOption add) <*> (Some 2) <*> (Some 1)
+                  |> getOrElse 0
+
+    Assert.Equal(result, 3)
