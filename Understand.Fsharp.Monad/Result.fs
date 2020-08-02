@@ -39,16 +39,16 @@ module result =
     | head :: tail ->
         retn cons <*> (f head) <*> (traverseResultA f tail)
 
-//  let rec traverseResultM f list =
-//    let (>>=) x f = bind x f
-//    let retn = Success
-//    let cons head tail = head :: tail
-//    match list with
-//    | [] -> retn []
-//    | head::tail ->
-//        (f head) >>= (fun h ->
-//        traverseResultM f tail >>= (fun t ->
-//        retn (cons h t) ))
+  //  let rec traverseResultM f list =
+  //    let (>>=) x f = bind x f
+  //    let retn = Success
+  //    let cons head tail = head :: tail
+  //    match list with
+  //    | [] -> retn []
+  //    | head::tail ->
+  //        (f head) >>= (fun h ->
+  //        traverseResultM f tail >>= (fun t ->
+  //        retn (cons h t) ))
 
   let traverseResultA' f list =
     let (<*>) = apply
@@ -65,11 +65,13 @@ module result =
     let cons head tail = head :: tail
     let initState = retn []
     let fold head tail =
-      f head >>= (fun h ->
-        tail >>= (fun t ->
-          retn (cons h t)))
+      f head >>= (fun h -> tail >>= (fun t -> retn (cons h t)))
 
     List.foldBack fold list initState
+
+
+  let sequenceResultA x = traverseResultA' id
+  let sequenceResultM x = traverseResultM' id
 
   type ResultBuilder() =
     member this.Return x = returnResult x
@@ -129,12 +131,16 @@ module Tests =
     }
 
   let ``traverse by applicative style`` () =
-    let list = [1; 2; 3]
+    let list = [ 1; 2; 3 ]
+
     let createCustomerId id =
-      if id > 1 then
-        Success id
-      else
-        Failure ["incorrect id"]
+      if id > 1 then Success id else Failure [ "incorrect id" ]
 
     traverseResultA' createCustomerId list
 
+  let ``test sequence`` () =
+    let list = [ "1"; "2"; "3" ]
+    let parseInt = Int32.Parse
+    list
+    |> List.map parseInt
+    |> sequenceResultA
