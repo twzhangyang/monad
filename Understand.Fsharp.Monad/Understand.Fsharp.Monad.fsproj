@@ -14,6 +14,8 @@
         <Compile Include="WebClientDownload.fs" />
         <Compile Include="ReaderX.fs" />
         <Compile Include="Parser.fs" />
+        <Compile Include="ResultX.fs" />
+        <Compile Include="Customer.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
 
