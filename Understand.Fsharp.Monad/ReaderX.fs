@@ -10,6 +10,9 @@ type ProductId = ProductId of string
 type ProductInfo =
   { ProductName: string }
 
+type IApiClient =
+  abstract Get: obj -> Result<'a>
+
 type ApiClient() =
   static let mutable data = Map.empty<string, obj>
 
