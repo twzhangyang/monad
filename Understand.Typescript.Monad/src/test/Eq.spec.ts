@@ -1,4 +1,10 @@
-import { Eq, fromEquals } from "fp-ts/lib/Eq"
+import { contramap, Eq, fromEquals } from "fp-ts/lib/Eq"
+import { type } from "os"
+
+type User = {
+  id: number
+  name: string
+}
 
 describe("Eq test", () => {
   const getEq: <A>(E: Eq<A>) => Eq<Array<A>> = (E) => {
@@ -7,16 +13,22 @@ describe("Eq test", () => {
     }
   }
 
-  const map1: <A, B>(f: (b: B) => A) => (fa: Eq<A>) => Eq<B> =
-    (f) => (fa) => fromEquals((x, y) => fa.equals(f(x), f(y)))
-
+  const eqNumber: Eq<number> = {
+    equals: (x, y) => x === y
+  }
 
   it("eq Number", () => {
-    const eqNumber: Eq<number> = {
-      equals: (x, y) => x === y
-    }
-
     const eqArrayOfNumber: Eq<Array<number>> = getEq(eqNumber)
+  })
+
+  it("eq user", () => {
+    const eqUser: Eq<User> = contramap((user: User) => user.id)(eqNumber)
+    const userA = {id: 1, name: "userA"}
+    const userB = {id: 2, name: "userB"}
+
+    const equal = eqUser.equals(userA, userB)
+
+    expect(equal).toBeFalsy()
   })
 
   it("function signature", () => {
