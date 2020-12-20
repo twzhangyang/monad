@@ -1,5 +1,4 @@
 import { contramap, Eq, fromEquals } from "fp-ts/lib/Eq"
-import { type } from "os"
 
 type User = {
   id: number

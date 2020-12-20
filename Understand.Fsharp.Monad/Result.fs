@@ -39,16 +39,16 @@ module result =
     | head :: tail ->
         retn cons <*> (f head) <*> (traverseResultA f tail)
 
-  //  let rec traverseResultM f list =
-  //    let (>>=) x f = bind x f
-  //    let retn = Success
-  //    let cons head tail = head :: tail
-  //    match list with
-  //    | [] -> retn []
-  //    | head::tail ->
-  //        (f head) >>= (fun h ->
-  //        traverseResultM f tail >>= (fun t ->
-  //        retn (cons h t) ))
+  let rec traverseResultM f list =
+    let (>>=) x f = bind f x
+    let retn = Success
+    let cons head tail = head :: tail
+    match list with
+    | [] -> retn []
+    | head::tail ->
+        (f head) >>= (fun h ->
+        traverseResultM f tail >>= (fun t ->
+        retn (cons h t) ))
 
   let traverseResultA' f list =
     let (<*>) = apply
