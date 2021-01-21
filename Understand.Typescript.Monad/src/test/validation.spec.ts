@@ -38,7 +38,7 @@ const validatePasswordV = (s: string): Either<NonEmptyArray<string>, string> => 
     sequenceT(getValidation(getSemigroup<string>()))(
       minLengthV(s),
       oneCapitalV(s),
-      oneNumberV(s)
+      oneNumberV(s),
     ),
     map(() => s)
   )
@@ -86,6 +86,7 @@ function specializedSequenceT(
   // builds a tuple from three strings
   const tuple = (a: string) => (b: string) => (c: string): [string, string, string] => [a, b, c]
 
+  const temp = V.map(firstValidation, tuple)
   // manual lifting, check out the "Lifting" section in "Getting started with fp-ts: Applicative"
   return V.ap(V.ap(V.map(firstValidation, tuple), secondValidation), thirdValidation)
 }

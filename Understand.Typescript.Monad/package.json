@@ -12,6 +12,7 @@
     "@babel/preset-env": "^7.12.10",
     "@babel/preset-typescript": "^7.12.7",
     "@types/jest": "^26.0.19",
+    "@types/lodash": "^4.14.167",
     "jest": "^26.6.3",
     "nodemon": "^2.0.6",
     "rimraf": "^3.0.2",
@@ -21,6 +22,7 @@
   },
   "dependencies": {
     "@types/node": "^14.14.13",
-    "fp-ts": "^2.9.1"
+    "fp-ts": "^2.9.1",
+    "lodash": "^4.17.20"
   }
 }
