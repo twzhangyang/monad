@@ -29,6 +29,19 @@ describe("invent monoid", () => {
 
     expect(result).toBe(0);
   });
+
+  it("test4", () => {
+    [1, 2, 3, 4].reduce((acc, val) => acc + val);
+    ["a", "b", "c", "d"].reduce((acc, val) => acc + val);
+
+    type concat = <A>(x: A, y: A) => A
+    type concat1 = <T1, T2>(x: T1) => T2
+  });
+
+  interface Monoid<A> {
+    readonly concat: (x: A, y: A) => A
+    readonly empty: A
+  }
 });
 
 describe("Monoid test", () => {
