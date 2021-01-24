@@ -38,6 +38,49 @@ describe("invent monoid", () => {
     type concat1 = <T1, T2>(x: T1) => T2
   });
 
+  it("test5", () => {
+    type OrderLine = {
+      name: string,
+      quality: number,
+      price: number,
+      total: number
+    }
+
+    const calculateOrderCart = (orderLines: OrderLine[]) => {
+      let total = 0;
+      for (let i = 0; i < orderLines.length; i++) {
+        total += orderLines[i].total;
+      }
+      return total;
+    };
+
+    const orderLines: OrderLine[] = [
+      { name: "name1", quality: 1, price: 1.2, total: 1.2 },
+      { name: "name2", quality: 2, price: 1.1, total: 2.2 },
+      { name: "name3", quality: 2, price: 1.8, total: 3.6 }
+    ];
+
+    expect(calculateOrderCart(orderLines)).toBe(7);
+    // expect(orderLines.reduce((acc, val) => acc.total + val.total))
+
+    const addTwoOrderLines = (line1: OrderLine, line2: OrderLine): OrderLine => (
+      {
+        name: "total",
+        quality: line1.quality + line2.quality,
+        price: 1,
+        total: line1.total + line2.total
+      }
+    );
+
+    expect(orderLines.reduce(addTwoOrderLines)).toEqual({
+      name: "total",
+      quality: 5,
+      price: 1,
+      total: 7
+    });
+
+  });
+
   interface Monoid<A> {
     readonly concat: (x: A, y: A) => A
     readonly empty: A
