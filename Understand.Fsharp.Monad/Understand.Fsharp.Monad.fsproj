@@ -17,6 +17,7 @@
         <Compile Include="ResultX.fs" />
         <Compile Include="Customer.fs" />
         <Compile Include="Program.fs" />
+        <Compile Include="State.fs" />
     </ItemGroup>
 
     <ItemGroup>
